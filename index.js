@@ -31,7 +31,7 @@ async function getStateParams() {
   };
 }
 
-async function getTheMenu(scuolaId, dietaId, params) {
+async function getTheMenu(scuolaId, dietaId, params, next) {
   let bodyFormData = new FormData();
   bodyFormData.append("__VIEWSTATE", params.viewstate);
   bodyFormData.append("__VIEWSTATEGENERATOR", params.viewstategen);
@@ -49,10 +49,26 @@ async function getTheMenu(scuolaId, dietaId, params) {
     "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$drpDiet",
     dietaId
   );
-  bodyFormData.append(
-    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$btnSearch",
-    "Visualizza"
-  );
+
+  if (next) {
+    bodyFormData.append(
+      "__EVENTTARGET",
+      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$childMenu$btnMoveNext"
+    );
+    bodyFormData.append(
+      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$ScriptManager",
+      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$UpdatePanel|Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$childMenu$btnMoveNext"
+    );
+    bodyFormData.append(
+      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$hdnDate",
+      ""
+    );
+  } else {
+    bodyFormData.append(
+      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$btnSearch",
+      "Visualizza"
+    );
+  }
 
   const starGlobal = /\*/g;
 
@@ -72,9 +88,9 @@ async function getTheMenu(scuolaId, dietaId, params) {
   return menuToReply;
 }
 
-async function doTheCall(scuolaId, menuId) {
+async function doTheCall(scuolaId, menuId, next) {
   const params = await getStateParams();
-  const menu = await getTheMenu(scuolaId, menuId, params);
+  const menu = await getTheMenu(scuolaId, menuId, params, next);
   return menu;
 }
 
@@ -90,7 +106,25 @@ bot.command("menu", async (ctx) => {
     const menuToReply = await doTheCall(args[0], "2");
     ctx.reply(menuToReply);
   } else {
-    ctx.reply("Specificare un id scuola. Es: /menu 2|302|8");
+    const menuToReply = await doTheCall("2|302|8", "2");
+    ctx.reply(menuToReply);
+    ctx.reply(
+      "Per il menu di oggi, specificare un id scuola. Es: /menu 2|302|8"
+    );
+  }
+});
+
+bot.command("domani", async (ctx) => {
+  const { args } = ctx;
+  if (typeof args != "undefined" && args.length > 0) {
+    const menuToReply = await doTheCall(args[0], "2", true);
+    ctx.reply(menuToReply);
+  } else {
+    const menuToReply = await doTheCall("2|302|8", "2", true);
+    ctx.reply(menuToReply);
+    ctx.reply(
+      "Per il menu di domani, specificare un id scuola. Es: /domani 2|302|8"
+    );
   }
 });
 
