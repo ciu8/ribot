@@ -2,8 +2,9 @@ const { Telegraf } = require("telegraf");
 const axios = require("axios").default;
 const HTMLParser = require("node-html-parser");
 var FormData = require("form-data");
+require('dotenv').config();
 
-const bot = new Telegraf("6796696681:AAHoDnW7JoCdpU4nA2qt60RN3DK1fM7wzsk");
+const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const url = "https://www.riboscuola.it/menu/ricerca-menu.aspx";
 
 const headers = {
@@ -154,3 +155,6 @@ bot.command("scuole", async (ctx) => {
 });
 
 bot.launch();
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'))
+process.once('SIGTERM', () => bot.stop('SIGTERM'))
