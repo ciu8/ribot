@@ -1,11 +1,21 @@
-const { Telegraf } = require("telegraf");
+const { Telegraf, Markup } = require("telegraf");
 const axios = require("axios").default;
 const HTMLParser = require("node-html-parser");
 var FormData = require("form-data");
-require('dotenv').config();
+const {
+  SCUOLE,
+  LISTA_MENU_SALVATI,
+  SALVA_MENU,
+  ALTRE_SCUOLE,
+  MENU_PRINCIPALE,
+  MENU_SCUOLE,
+} = require("./menu");
+require("dotenv").config();
 
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const url = "https://www.riboscuola.it/menu/ricerca-menu.aspx";
+const PAGINATION_SCUOLE = 10;
+const AFTER = -1;
 
 const headers = {
   Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -96,7 +106,7 @@ async function doTheCall(scuolaId, menuId, next) {
   return menu;
 }
 
-async function getScuole() {
+async function getScuole(after = AFTER) {
   const response = await axios.get(url, { headers: headers });
   const parsed_html = HTMLParser.parse(response.data);
   const options = parsed_html.querySelectorAll(
@@ -108,16 +118,19 @@ async function getScuole() {
       return { label: o.text, value: o.attrs.value };
     });
 
-  return scuole;
+  return scuole.slice(after + 1, PAGINATION_SCUOLE);
 }
 
+/****** START BOT ********/
+
 bot.start((message) => {
-  return message.reply(
-    "Ciao, sono RiBot e ti aiuterò a scoprire il menu della mensa scolastica!"
+  message.reply(
+    "Ciao, sono RiBot e ti aiuterò a scoprire il menu della mensa scolastica!",
+    Markup.keyboard(MENU_PRINCIPALE)
   );
 });
 
-bot.command("menu", async (ctx) => {
+bot.hears("😎 Menu", async (ctx) => {
   const { args } = ctx;
   if (typeof args != "undefined" && args.length > 0) {
     const menuToReply = await doTheCall(args[0], "2");
@@ -131,30 +144,16 @@ bot.command("menu", async (ctx) => {
   }
 });
 
-bot.command("domani", async (ctx) => {
-  const { args } = ctx;
-  if (typeof args != "undefined" && args.length > 0) {
-    const menuToReply = await doTheCall(args[0], "2", true);
-    ctx.reply(menuToReply);
-  } else {
-    const menuToReply = await doTheCall("2|302|8", "2", true);
-    ctx.reply(menuToReply);
-    ctx.reply(
-      "Per il menu di domani, specificare un id scuola. Es: /domani 2|302|8"
-    );
-  }
-});
-
-bot.command("scuole", async (ctx) => {
+bot.hears(SCUOLE, async (ctx) => {
   const scuole = await getScuole();
-  const toReply = "";
+  let toReply = "Ecco le scuole: \n";
   for (let i = 0; i < scuole.length; i++) {
     toReply += scuole[i].label + ": " + scuole[i].value + "\n";
   }
-  ctx.reply(toReply);
+  ctx.reply(toReply, Markup.keyboard(MENU_SCUOLE));
 });
 
 bot.launch();
 // Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+process.once("SIGINT", () => bot.stop("SIGINT"));
+process.once("SIGTERM", () => bot.stop("SIGTERM"));
