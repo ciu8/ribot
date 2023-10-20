@@ -6,16 +6,17 @@ var FormData = require("form-data");
 const bot = new Telegraf("6796696681:AAHoDnW7JoCdpU4nA2qt60RN3DK1fM7wzsk");
 const url = "https://www.riboscuola.it/menu/ricerca-menu.aspx";
 
+const headers = {
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.17 (KHTML, like Gecko)  Chrome/24.0.1312.57 Safari/537.17",
+  "Content-Type": "application/x-www-form-urlencoded",
+  "Accept-Encoding": "gzip,deflate,sdch",
+  "Accept-Language": "en-US,en;q=0.8",
+  "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
+};
+
 async function getStateParams() {
-  const headers = {
-    Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.17 (KHTML, like Gecko)  Chrome/24.0.1312.57 Safari/537.17",
-    "Content-Type": "application/x-www-form-urlencoded",
-    "Accept-Encoding": "gzip,deflate,sdch",
-    "Accept-Language": "en-US,en;q=0.8",
-    "Accept-Charset": "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
-  };
   const response = await axios.get(url, { headers: headers });
   const parsed_html = HTMLParser.parse(response.data);
   const viewstate = parsed_html.querySelector("input#__VIEWSTATE").attrs.value;
@@ -94,6 +95,21 @@ async function doTheCall(scuolaId, menuId, next) {
   return menu;
 }
 
+async function getScuole() {
+  const response = await axios.get(url, { headers: headers });
+  const parsed_html = HTMLParser.parse(response.data);
+  const options = parsed_html.querySelectorAll(
+    "select#Elior_Ribo_Module_182151_m5e0a362ea0b54e8284274914f25d95c4_drpDestination option"
+  );
+  const scuole = options
+    .filter((o) => o.attrs.value != "")
+    .map((o) => {
+      return { label: o.text, value: o.attrs.value };
+    });
+
+  return scuole;
+}
+
 bot.start((message) => {
   return message.reply(
     "Ciao, sono RiBot e ti aiuterò a scoprire il menu della mensa scolastica!"
@@ -126,6 +142,15 @@ bot.command("domani", async (ctx) => {
       "Per il menu di domani, specificare un id scuola. Es: /domani 2|302|8"
     );
   }
+});
+
+bot.command("scuole", async (ctx) => {
+  const scuole = await getScuole();
+  const toReply = "";
+  for (let i = 0; i < scuole.length; i++) {
+    toReply += scuole[i].label + ": " + scuole[i].value + "\n";
+  }
+  ctx.reply(toReply);
 });
 
 bot.launch();
