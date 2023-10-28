@@ -153,6 +153,19 @@ bot.hears(SCUOLE, async (ctx) => {
   ctx.reply(toReply, Markup.keyboard(MENU_SCUOLE));
 });
 
+bot.hears(LISTA_MENU_SALVATI, async (ctx) => {
+  const scuole = await getScuole();
+  const listaMenuSalvati = [
+    { nome: "Greta Dozza", idScuola: "2|302|8", idDieta: "2" },
+    { nome: "Pippo Acri", idScuola: "2|1090|7", idDieta: "2" },
+  ];
+  let toReply = "Ecco i menu:";
+  const menuAsMarkup = listaMenuSalvati.map((l) => [
+    l.nome + ": " + l.idScuola + " - " + l.idDieta,
+  ]);
+  ctx.reply(toReply, Markup.keyboard(menuAsMarkup));
+});
+
 bot.launch();
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
