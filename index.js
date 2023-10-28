@@ -154,7 +154,6 @@ bot.hears(SCUOLE, async (ctx) => {
 });
 
 bot.hears(LISTA_MENU_SALVATI, async (ctx) => {
-  const scuole = await getScuole();
   const listaMenuSalvati = [
     { nome: "Greta Dozza", idScuola: "2|302|8", idDieta: "2" },
     { nome: "Pippo Acri", idScuola: "2|1090|7", idDieta: "2" },
