@@ -37,5 +37,5 @@ jobs:
           memory_size: 128
           timeout: 5
           handler: handler
-          role: arn:aws:iam::788704922800:role/ribot-lambda-role
+          role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ribot-lambda-role
           runtime: nodejs18.x
