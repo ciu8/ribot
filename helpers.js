@@ -76,15 +76,20 @@ async function getTheMenu(scuolaId, dietaId, params, next) {
   const menuHtml = HTMLParser.parse(responseMenu.data);
   const listaPortate = menuHtml.querySelectorAll("ul.lista-portate li");
   let menuToReply = "";
-  listaPortate.map((portata) => {
-    const nomePortata = portata.querySelector("label").text.trim();
-    const nomePietanza = portata
-      .querySelector("div.descr-product")
-      .querySelector("strong")
-      .text.replace(starGlobal, "")
-      .trim();
-    menuToReply += nomePortata + ": " + nomePietanza + "\n";
-  });
+  if (listaPortate.length > 0) {
+    listaPortate.map((portata) => {
+      const nomePortata = portata.querySelector("label").text.trim();
+      const nomePietanza = portata
+        .querySelector("div.descr-product")
+        .querySelector("strong")
+        .text.replace(starGlobal, "")
+        .trim();
+      menuToReply += nomePortata + ": " + nomePietanza + "\n";
+    });
+  } else {
+    menuToReply = "Nessun menu presente";
+  }
+
   return menuToReply;
 }
 

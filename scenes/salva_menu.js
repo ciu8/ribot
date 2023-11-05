@@ -27,7 +27,10 @@ function salva_menu_scene() {
       Markup.keyboard(MENU_PRINCIPALE).oneTime().resize().extra()
     )
   );
-  salvaMenuScene.hears(/Conferma/gi, leave());
+  salvaMenuScene.hears(/Conferma/gi, (ctx) => {
+    ctx.reply("Menu salvato.");
+    return ctx.scene.leave();
+  });
   salvaMenuScene.hears(/Annulla/gi, leave());
   salvaMenuScene.on("message", async (ctx) => {
     switch (ctx.session.salvaMenuSceneStep) {
@@ -50,7 +53,6 @@ function salva_menu_scene() {
           nome_scuola: scelta[0],
           idScuola: scelta[1],
         };
-        ctx.reply(`Hai scelto ${scelta[0]}. Inserisci il tipo di dieta:`);
         const diete = await getDiete();
         const dieteAsMarkup = diete.map((d) => [d.label + " ; " + d.value]);
         dieteAsMarkup.push(["Annulla"]);
@@ -79,7 +81,7 @@ function salva_menu_scene() {
           nome: scelta,
         };
         ctx.reply(
-          `Conferma i dati:\n ${JSON.stringify(ctx.session.preferenza)}`,
+          `Confermi di voler salvare i dati?`,
           Markup.keyboard([["Conferma"], ["Annulla"]])
             .oneTime()
             .resize()

@@ -17,6 +17,7 @@ function lista_menu_scene() {
     const menuAsMarkup = listaMenuSalvati.map((l) => [
       l.nome + " : " + l.idScuola + " - " + l.idDieta,
     ]);
+    menuAsMarkup.push(["Annulla"]);
     ctx.reply(
       toReply,
       Markup.keyboard(menuAsMarkup).oneTime().resize().extra()
@@ -28,6 +29,7 @@ function lista_menu_scene() {
       Markup.keyboard(MENU_PRINCIPALE).oneTime().resize().extra()
     )
   );
+  listaMenuScene.hears(/Annulla/gi, leave());
   listaMenuScene.on("message", async (ctx) => {
     const scelta = ctx.update.message.text.split(" : ");
     const data = scelta[1];
