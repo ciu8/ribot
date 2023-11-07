@@ -2,14 +2,14 @@ const { Markup } = require("telegraf");
 const Stage = require("telegraf/stage");
 const Scene = require("telegraf/scenes/base");
 const { searchScuola, getDiete } = require("../helpers");
-const { MENU_PRINCIPALE } = require("../menu");
+const { MENU_PRINCIPALE, ANNULLA, CONFERMA } = require("../menu");
 const { leave } = Stage;
 
 function salva_menu_scene() {
+  const NO_SCHOOL_FOUND = "Nessuna scuola trovata";
   // Salva Menu scene
   const salvaMenuScene = new Scene("salva_menu");
   salvaMenuScene.enter((ctx) => {
-    console.log(ctx.from);
     ctx.session.salvaMenuSceneStep = 1;
     ctx.session.preferenza = {
       telegramId: ctx.from.id,
@@ -27,18 +27,22 @@ function salva_menu_scene() {
       Markup.keyboard(MENU_PRINCIPALE).oneTime().resize().extra()
     )
   );
-  salvaMenuScene.hears(/Conferma/gi, (ctx) => {
+  salvaMenuScene.hears(CONFERMA, (ctx) => {
     ctx.reply("Menu salvato.");
     return ctx.scene.leave();
   });
-  salvaMenuScene.hears(/Annulla/gi, leave());
+  salvaMenuScene.hears(ANNULLA, leave());
   salvaMenuScene.on("message", async (ctx) => {
     switch (ctx.session.salvaMenuSceneStep) {
       case 1: {
         const search = ctx.update.message.text.trim().toLowerCase();
         const scuole = await searchScuola(search);
+        if (scuole.length == 0) {
+          ctx.reply(NO_SCHOOL_FOUND);
+          return ctx.scene.leave();
+        }
         const scuoleAsMarkup = scuole.map((s) => [s.label + " ; " + s.value]);
-        scuoleAsMarkup.push(["Annulla"]);
+        scuoleAsMarkup.push([ANNULLA]);
         ctx.reply(
           "Scegli la scuola:",
           Markup.keyboard(scuoleAsMarkup).oneTime().resize().extra()
@@ -55,7 +59,7 @@ function salva_menu_scene() {
         };
         const diete = await getDiete();
         const dieteAsMarkup = diete.map((d) => [d.label + " ; " + d.value]);
-        dieteAsMarkup.push(["Annulla"]);
+        dieteAsMarkup.push([ANNULLA]);
         ctx.reply(
           `Hai scelto ${scelta[0]}. Inserisci il tipo di dieta:`,
           Markup.keyboard(dieteAsMarkup).oneTime().resize().extra()
@@ -82,7 +86,7 @@ function salva_menu_scene() {
         };
         ctx.reply(
           `Confermi di voler salvare i dati?`,
-          Markup.keyboard([["Conferma"], ["Annulla"]])
+          Markup.keyboard([[CONFERMA], [ANNULLA]])
             .oneTime()
             .resize()
             .extra()
