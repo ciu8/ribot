@@ -3,6 +3,7 @@ const Stage = require("telegraf/stage");
 const Scene = require("telegraf/scenes/base");
 const { doTheCall } = require("../helpers");
 const { MENU_PRINCIPALE, ANNULLA } = require("../menu");
+const { getPreferencies } = require("../db_client");
 const { leave } = Stage;
 
 function lista_menu_scene() {
@@ -11,12 +12,13 @@ function lista_menu_scene() {
     "Seleziona uno dei menu che hai salvato o usa /cancel per tornare al menu principale";
   //lista menu scene
   const listaMenuScene = new Scene("lista_menu");
-  listaMenuScene.enter((ctx) => {
-    let listaMenuSalvati = [
+  listaMenuScene.enter(async (ctx) => {
+    /*let listaMenuSalvati = [
       { nome: "Greta Dozza", idScuola: "2|302|8", idDieta: "2" },
       { nome: "Pippo Acri", idScuola: "2|1090|7", idDieta: "2" },
-    ];
-    listaMenuSalvati = [];
+    ];*/
+    const { from } = ctx.update.message;
+    const listaMenuSalvati = await getPreferencies(from.id);
     if (listaMenuSalvati.length == 0) {
       ctx.reply(NO_MENU_FOUND);
       return ctx.scene.leave();

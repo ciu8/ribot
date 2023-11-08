@@ -28,6 +28,7 @@ function salva_menu_scene() {
     )
   );
   salvaMenuScene.hears(CONFERMA, (ctx) => {
+    console.log("preferenza", ctx.session.preferenza);
     ctx.reply("Menu salvato.");
     return ctx.scene.leave();
   });

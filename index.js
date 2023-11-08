@@ -5,6 +5,7 @@ const { leave } = Stage;
 const { LISTA_MENU_SALVATI, SALVA_MENU, MENU_PRINCIPALE } = require("./menu");
 const { salva_menu_scene } = require("./scenes/salva_menu");
 const { lista_menu_scene } = require("./scenes/lista_menu");
+const { getPreferencies, describeTable } = require("./db_client");
 require("dotenv").config();
 
 // Create scene manager
@@ -30,6 +31,9 @@ bot.start((message) => {
 
 bot.hears(SALVA_MENU, (ctx) => ctx.scene.enter("salva_menu"));
 bot.hears(LISTA_MENU_SALVATI, (ctx) => ctx.scene.enter("lista_menu"));
+bot.hears("test", async (ctx) => {
+  ctx.reply("Do the test");
+});
 bot.on("message", (ctx) =>
   ctx.reply(
     "❗ Non ho capito...\nusa /start per iniziare o /cancel per cancellare il comando corrente."
