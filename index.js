@@ -19,7 +19,7 @@ require("dotenv").config();
 
 const isLocal = process.env.IS_LOCAL || false;
 
-function start() {
+exports.handler = async function (event, context) {
   const stage = new Stage();
   stage.command("cancel", leave());
 
@@ -71,8 +71,4 @@ function start() {
   // Enable graceful stop
   process.once("SIGINT", () => bot.stop("SIGINT"));
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
-}
-
-if (isLocal) {
-  start();
-}
+};
