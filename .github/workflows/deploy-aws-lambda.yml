@@ -36,6 +36,6 @@ jobs:
           zip_file: latest.zip
           memory_size: 128
           timeout: 5
-          handler: handler
+          handler: index.handler
           role: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ribot-lambda-role
           runtime: nodejs18.x
