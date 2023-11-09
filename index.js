@@ -9,6 +9,7 @@ const {
   CONSULTA_MENU,
   ELIMINA_MENU,
 } = require("./menu");
+const { IS_LOCAL, WEBHOOK_DOMAIN, WEBHOOK_PORT } = process.env;
 const { salva_menu_scene } = require("./scenes/salva_menu");
 const { lista_menu_scene } = require("./scenes/lista_menu");
 const { consulta_menu_scene } = require("./scenes/consulta_menu");
@@ -35,7 +36,6 @@ bot.use(stage.middleware());
 /****** START BOT ********/
 
 bot.start((message) => {
-  console.log(message);
   message.reply(
     "Ciao, sono RiBot e ti aiuterò a scoprire il menu della mensa scolastica!",
     Markup.keyboard(MENU_PRINCIPALE).oneTime().resize().extra()
@@ -55,7 +55,18 @@ bot.on("message", (ctx) =>
   )
 );
 
-bot.launch();
+let isLocal = process.env.IS_LOCAL || false;
+if (isLocal) {
+  bot.launch();
+} else {
+  bot.launch({
+    webhook: {
+      domain: process.env.WEBHOOK_DOMAIN,
+      port: process.env.WEBHOOK_PORT,
+    },
+  });
+}
+
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));

@@ -30,9 +30,7 @@ function salva_menu_scene() {
   );
   salvaMenuScene.hears(CONFERMA, async (ctx) => {
     const { preferenza } = ctx.session;
-    console.log("preferenza", preferenza);
     const save = await savePreference(preferenza);
-    console.log("save", save);
     ctx.reply("Menu salvato.");
     return ctx.scene.leave();
   });

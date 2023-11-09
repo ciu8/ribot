@@ -18,9 +18,6 @@ const getPreferencies = async (idTelegram) => {
     TableName: process.env.DYNAMO_DB_TABLE_NAME,
   });
   const response = await client.send(command);
-  response.Items.forEach(function (item) {
-    console.log(`${item}\n`);
-  });
   return response.Items;
 };
 
@@ -68,7 +65,6 @@ const deletePreference = async (telegramId, byName) => {
   });
 
   const response = await client.send(command);
-  console.log(response);
   return response;
 };
 
