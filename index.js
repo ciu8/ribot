@@ -17,6 +17,8 @@ const { deletePreference, describeTable } = require("./db_client");
 const { elimina_menu_scene } = require("./scenes/elimina_menu");
 require("dotenv").config();
 
+const isLocal = process.env.IS_LOCAL || false;
+
 function start() {
   const stage = new Stage();
   stage.command("cancel", leave());
@@ -55,7 +57,6 @@ function start() {
     )
   );
 
-  let isLocal = process.env.IS_LOCAL || false;
   if (isLocal) {
     bot.launch();
   } else {
@@ -72,4 +73,6 @@ function start() {
   process.once("SIGTERM", () => bot.stop("SIGTERM"));
 }
 
-start();
+if (isLocal) {
+  start();
+}
