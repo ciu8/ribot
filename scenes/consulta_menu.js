@@ -1,8 +1,8 @@
 const { Markup } = require("telegraf");
 const Stage = require("telegraf/stage");
 const Scene = require("telegraf/scenes/base");
-const { searchScuola, getDiete } = require("../helpers");
-const { MENU_PRINCIPALE, ANNULLA, CONFERMA } = require("../menu");
+const { searchScuola, getDiete, doTheCall } = require("../helpers");
+const { MENU_PRINCIPALE, INTRO_MENU_OGGI_MSG, INDIETRO } = require("../menu");
 const { leave } = Stage;
 
 function consulta_menu_scene() {
@@ -27,12 +27,7 @@ function consulta_menu_scene() {
       Markup.keyboard(MENU_PRINCIPALE).oneTime().resize().extra()
     )
   );
-  consultaMenuScene.hears(CONFERMA, (ctx) => {
-    console.log("preferenza", ctx.session.preferenza);
-    ctx.reply("Menu salvato.");
-    return ctx.scene.leave();
-  });
-  consultaMenuScene.hears(ANNULLA, leave());
+  consultaMenuScene.hears(INDIETRO, leave());
   consultaMenuScene.on("message", async (ctx) => {
     switch (ctx.session.consultaMenuSceneStep) {
       case 1: {
@@ -43,7 +38,7 @@ function consulta_menu_scene() {
           return ctx.scene.leave();
         }
         const scuoleAsMarkup = scuole.map((s) => [s.label + " ; " + s.value]);
-        scuoleAsMarkup.push([ANNULLA]);
+        scuoleAsMarkup.push([INDIETRO]);
         ctx.reply(
           "Scegli la scuola:",
           Markup.keyboard(scuoleAsMarkup).oneTime().resize().extra()
@@ -61,7 +56,7 @@ function consulta_menu_scene() {
         };
         const diete = await getDiete();
         const dieteAsMarkup = diete.map((d) => [d.label + " ; " + d.value]);
-        dieteAsMarkup.push([ANNULLA]);
+        dieteAsMarkup.push([INDIETRO]);
         ctx.reply(
           `Hai scelto ${scelta[0]}. Inserisci il tipo di dieta:`,
           Markup.keyboard(dieteAsMarkup).oneTime().resize().extra()
@@ -77,24 +72,10 @@ function consulta_menu_scene() {
           idDieta: scelta[1],
           nome_dieta: scelta[0],
         };
-        ctx.reply(`Hai scelto ${scelta[0]}. Inserisci un nome per il menu:`);
-        ctx.session.consultaMenuSceneStep =
-          ctx.session.consultaMenuSceneStep + 1;
-        break;
-      }
-      case 4: {
-        const scelta = ctx.update.message.text.trim();
-        ctx.session.preferenza = {
-          ...ctx.session.preferenza,
-          nome: scelta,
-        };
-        ctx.reply(
-          `Confermi di voler salvare i dati?`,
-          Markup.keyboard([[CONFERMA], [ANNULLA]])
-            .oneTime()
-            .resize()
-            .extra()
-        );
+        const { idScuola, idDieta } = ctx.session.preferenza;
+        const menuToReply = await doTheCall(idScuola, idDieta);
+        ctx.reply(INTRO_MENU_OGGI_MSG + menuToReply);
+        ctx.scene.leave();
         break;
       }
     }

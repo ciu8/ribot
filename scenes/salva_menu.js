@@ -3,6 +3,7 @@ const Stage = require("telegraf/stage");
 const Scene = require("telegraf/scenes/base");
 const { searchScuola, getDiete } = require("../helpers");
 const { MENU_PRINCIPALE, ANNULLA, CONFERMA } = require("../menu");
+const { savePreference } = require("../db_client");
 const { leave } = Stage;
 
 function salva_menu_scene() {
@@ -12,7 +13,7 @@ function salva_menu_scene() {
   salvaMenuScene.enter((ctx) => {
     ctx.session.salvaMenuSceneStep = 1;
     ctx.session.preferenza = {
-      telegramId: ctx.from.id,
+      telegramId: ctx.from.id.toString(),
       nome: "",
       nome_scuola: "",
       idScuola: "",
@@ -27,8 +28,11 @@ function salva_menu_scene() {
       Markup.keyboard(MENU_PRINCIPALE).oneTime().resize().extra()
     )
   );
-  salvaMenuScene.hears(CONFERMA, (ctx) => {
-    console.log("preferenza", ctx.session.preferenza);
+  salvaMenuScene.hears(CONFERMA, async (ctx) => {
+    const { preferenza } = ctx.session;
+    console.log("preferenza", preferenza);
+    const save = await savePreference(preferenza);
+    console.log("save", save);
     ctx.reply("Menu salvato.");
     return ctx.scene.leave();
   });
