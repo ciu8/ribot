@@ -1,6 +1,7 @@
 const { Telegraf, Markup } = require("telegraf");
 const session = require("telegraf/session");
 const Stage = require("telegraf/stage");
+const DynamoDBSession = require('telegraf-session-dynamodb')
 const { leave } = Stage;
 const {
   LISTA_MENU_SALVATI,
@@ -15,6 +16,13 @@ const { lista_menu_scene } = require("./scenes/lista_menu");
 const { consulta_menu_scene } = require("./scenes/consulta_menu");
 const { deletePreference, describeTable } = require("./db_client");
 const { elimina_menu_scene } = require("./scenes/elimina_menu");
+const dynamoDBSession = new DynamoDBSession({
+  dynamoDBConfig: {
+    params: { TableName: process.env.DYNAMO_DB_SESSIONS_TABLE_NAME},
+    region: process.env.DYNAMO_DB_REGION
+  }
+})
+
 require("dotenv").config();
 
 const isLocal = process.env.IS_LOCAL || false;
@@ -36,7 +44,9 @@ exports.handler = async function (event) {
   );
 
   const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-  bot.use(session());
+  
+  //bot.use(session());
+  bot.use(dynamoDBSession.middleware())
   bot.use(stage.middleware());
 
   /****** START BOT ********/
