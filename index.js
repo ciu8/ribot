@@ -1,6 +1,7 @@
 const { Telegraf, Markup } = require("telegraf");
 const session = require("telegraf/session");
 const Stage = require("telegraf/stage");
+const DynamoDBSession = require('telegraf-session-dynamodb')
 const { leave } = Stage;
 const {
   LISTA_MENU_SALVATI,
@@ -15,13 +16,24 @@ const { lista_menu_scene } = require("./scenes/lista_menu");
 const { consulta_menu_scene } = require("./scenes/consulta_menu");
 const { deletePreference, describeTable } = require("./db_client");
 const { elimina_menu_scene } = require("./scenes/elimina_menu");
+const dynamoDBSession = new DynamoDBSession({
+  dynamoDBConfig: {
+    params: { TableName: process.env.DYNAMO_DB_SESSIONS_TABLE_NAME},
+    region: process.env.DYNAMO_DB_REGION
+  }
+})
+
 require("dotenv").config();
 
 const isLocal = process.env.IS_LOCAL || false;
 
-exports.handler = async function (event, context) {
+exports.handler = async function (event) {
   const stage = new Stage();
   stage.command("cancel", leave());
+
+  // This is the raw request coming from Telegram
+  let body = event.body[0] === '{' ? JSON.parse(event.body) : JSON.parse(Buffer.from(event.body, 'base64'));
+  console.log("Received message: " + JSON.stringify(body));
 
   // Scene registration
   stage.register(
@@ -32,7 +44,9 @@ exports.handler = async function (event, context) {
   );
 
   const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-  bot.use(session());
+  
+  //bot.use(session());
+  bot.use(dynamoDBSession.middleware())
   bot.use(stage.middleware());
 
   /****** START BOT ********/
@@ -57,18 +71,22 @@ exports.handler = async function (event, context) {
     )
   );
 
-  if (isLocal) {
-    bot.launch();
-  } else {
-    bot.launch({
-      webhook: {
-        domain: process.env.WEBHOOK_DOMAIN,
-        port: process.env.WEBHOOK_PORT,
-      },
-    });
-  }
+  // if (isLocal) {
+  //   bot.launch();
+  // } else {
+  //   bot.launch({
+  //     webhook: {
+  //       domain: process.env.WEBHOOK_DOMAIN,
+  //       port: process.env.WEBHOOK_PORT,
+  //     },
+  //   });
+  // }
 
   // Enable graceful stop
-  process.once("SIGINT", () => bot.stop("SIGINT"));
-  process.once("SIGTERM", () => bot.stop("SIGTERM"));
+  // process.once("SIGINT", () => bot.stop("SIGINT"));
+  // process.once("SIGTERM", () => bot.stop("SIGTERM"));
+
+  // This will trigger the bot
+  await bot.handleUpdate(body);
+  return {statusCode: 200, body: ''};
 };
