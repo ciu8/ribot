@@ -32,6 +32,7 @@ async function getStateParams() {
 }
 
 async function getTheMenu(scuolaId, dietaId, params, next) {
+  console.log("Get The Menu: Scuola %s, Dieta %s, Params %s, Next %s", scuolaId, dietaId, params, next)
   let bodyFormData = new FormData();
   bodyFormData.append("__VIEWSTATE", params.viewstate);
   bodyFormData.append("__VIEWSTATEGENERATOR", params.viewstategen);

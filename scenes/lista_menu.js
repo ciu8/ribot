@@ -15,6 +15,7 @@ function lista_menu_scene() {
   listaMenuScene.enter(async (ctx) => {
     const { from } = ctx.update.message;
     const listaMenuSalvati = await getPreferencies(from.id);
+    console.log("listaMenuSalvati %s", listaMenuSalvati);
     if (listaMenuSalvati.length == 0) {
       ctx.reply(NO_MENU_FOUND);
       return ctx.scene.leave();
@@ -38,6 +39,7 @@ function lista_menu_scene() {
   listaMenuScene.hears(INDIETRO, leave());
   listaMenuScene.on("message", async (ctx) => {
     const scelta = ctx.update.message.text.split(" : ");
+    console.log("Scelta menu utente: %s", scelta);
     if (scelta.length != 2) {
       ctx.reply(COURTESY_MSG);
     } else {
