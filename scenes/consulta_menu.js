@@ -66,12 +66,17 @@ function consulta_menu_scene() {
         break;
       }
       case 3: {
-        const scelta = ctx.update.message.text.split(" ; ");
-        ctx.session.preferenza = {
-          ...ctx.session.preferenza,
-          idDieta: scelta[1],
-          nome_dieta: scelta[0],
-        };
+        if (ctx.update.message.text.length != 0 && ctx.update.message.text.indexOf(";") != -1) {
+          // Empty session, we need to parse the message
+          const scelta = ctx.update.message.text.split(" ; ");
+          ctx.session.preferenza = {
+            ...ctx.session.preferenza,
+            idDieta: scelta[1],
+            nome_dieta: scelta[0],
+          };
+        }
+        
+        
         const { idScuola, idDieta } = ctx.session.preferenza;
         const menuToReply = await doTheCall(idScuola, idDieta);
         ctx.reply(INTRO_MENU_OGGI_MSG + menuToReply);
