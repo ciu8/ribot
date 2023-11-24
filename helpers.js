@@ -84,7 +84,25 @@ async function getTheMenu(scuolaId, dietaId, params, next) {
         .querySelector("strong")
         .text.replace(starGlobal, "")
         .trim();
-      menuToReply += nomePortata + ": " + nomePietanza + "\n";
+      let emoji = ""
+      switch(nomePortata.toLowerCase()){
+        case "primi":
+          emoji = "🍝";
+          break;
+        case "secondi":
+          emoji = "🍲"
+          break;
+        case "contorni":
+          emoji = "🥦";
+          break;
+        case "frutta":
+          emoji = "🍎";
+          break;
+        case "merenda":
+          emoji = "🍰";
+          break
+      }
+      menuToReply += emoji + " " + nomePortata + ": " + nomePietanza + "\n";
     });
   } else {
     menuToReply = "Nessun menu presente";
