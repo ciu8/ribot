@@ -31,7 +31,7 @@ async function getStateParams() {
   };
 }
 
-async function getTheMenu(scuolaId, dietaId, params, next) {
+async function getTheMenu(scuolaId, dietaId, params) {
   let bodyFormData = new FormData();
   bodyFormData.append("__VIEWSTATE", params.viewstate);
   bodyFormData.append("__VIEWSTATEGENERATOR", params.viewstategen);
@@ -50,25 +50,10 @@ async function getTheMenu(scuolaId, dietaId, params, next) {
     dietaId
   );
 
-  if (next) {
-    bodyFormData.append(
-      "__EVENTTARGET",
-      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$childMenu$btnMoveNext"
-    );
-    bodyFormData.append(
-      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$ScriptManager",
-      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$UpdatePanel|Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$childMenu$btnMoveNext"
-    );
-    bodyFormData.append(
-      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$hdnDate",
-      ""
-    );
-  } else {
-    bodyFormData.append(
-      "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$btnSearch",
-      "Visualizza"
-    );
-  }
+  bodyFormData.append(
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$btnSearch",
+    "Visualizza"
+  );
 
   const starGlobal = /\*/g;
 
@@ -93,9 +78,69 @@ async function getTheMenu(scuolaId, dietaId, params, next) {
   return menuToReply;
 }
 
-async function doTheCall(scuolaId, menuId, next) {
+async function getTheMenuTomorrow(scuolaId, dietaId, params) {
+  let bodyFormData = new FormData();
+  bodyFormData.append("__VIEWSTATE", params.viewstate);
+  bodyFormData.append("__VIEWSTATEGENERATOR", params.viewstategen);
+  bodyFormData.append(
+    "__EVENTTARGET",
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$childMenu$btnMoveNext"
+  );
+  bodyFormData.append("__EVENTARGUMENT", "");
+  bodyFormData.append("__ASYNCPOST", "true");
+  bodyFormData.append("__SCROLLPOSITIONX", 0);
+  bodyFormData.append("__SCROLLPOSITIONY", 0);
+  bodyFormData.append("__EVENTVALIDATION", params.event_validation);
+  bodyFormData.append(
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$drpDestination",
+    scuolaId
+  );
+  bodyFormData.append(
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$drpDiet",
+    dietaId
+  );
+
+  bodyFormData.append(
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$ScriptManager",
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$UpdatePanel|Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$childMenu$btnMoveNext"
+  );
+  bodyFormData.append(
+    "Elior_Ribo_Module_182151$m5e0a362ea0b54e8284274914f25d95c4$hdnDate",
+    ""
+  );
+
+  const starGlobal = /\*/g;
+
+  const responseMenu = await axios.post(url, bodyFormData);
+  const menuHtml = HTMLParser.parse(responseMenu.data);
+  const listaPortate = menuHtml.querySelectorAll("ul.lista-portate li");
+  let menuToReply = "";
+  if (listaPortate.length > 0) {
+    listaPortate.map((portata) => {
+      const nomePortata = portata.querySelector("label").text.trim();
+      const nomePietanza = portata
+        .querySelector("div.descr-product")
+        .querySelector("strong")
+        .text.replace(starGlobal, "")
+        .trim();
+      menuToReply += nomePortata + ": " + nomePietanza + "\n";
+    });
+  } else {
+    menuToReply = "Nessun menu presente";
+  }
+
+  return menuToReply;
+}
+
+async function doTheCallTomorrow(scuolaId, menuId) {
   const params = await getStateParams();
-  const menu = await getTheMenu(scuolaId, menuId, params, next);
+  const menu = await getTheMenuTomorrow(scuolaId, menuId, params);
+  return menu;
+}
+
+async function doTheCall(scuolaId, menuId) {
+  const params = await getStateParams();
+  const menu = await getTheMenu(scuolaId, menuId, params);
   return menu;
 }
 
@@ -149,6 +194,8 @@ module.exports = {
   getStateParams,
   getTheMenu,
   doTheCall,
+  getTheMenuTomorrow,
+  doTheCallTomorrow,
   getScuole,
   searchScuola,
   getDiete,

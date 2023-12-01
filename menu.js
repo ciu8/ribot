@@ -8,6 +8,7 @@ const ANNULLA = "❌ Annulla";
 const CONFERMA = "✅ Conferma";
 const INDIETRO = "🔙 Indietro";
 const INTRO_MENU_OGGI_MSG = "Ecco il menu di oggi:\n";
+const INTRO_MENU_DOMANI_MSG = "Ecco il menu di domani:\n";
 const MENU_ELIMINATO_MSG = "Menu eliminato";
 
 const MENU_PRINCIPALE = [
@@ -27,6 +28,7 @@ module.exports = {
   CONFERMA,
   CONSULTA_MENU,
   INTRO_MENU_OGGI_MSG,
+  INTRO_MENU_DOMANI_MSG,
   ELIMINA_MENU,
   INDIETRO,
   MENU_ELIMINATO_MSG,
